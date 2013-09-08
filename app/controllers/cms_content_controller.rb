@@ -41,7 +41,7 @@ protected
   
   def load_cms_site
     @cms_site ||= if params[:site_id]
-      Cms::Site.find_by_id(params[:site_id])
+      Cms::Site.find(params[:site_id])
     else
       Cms::Site.find_site(request.host_with_port.downcase, request.fullpath)
     end
@@ -59,11 +59,11 @@ protected
   end
   
   def load_cms_page
-    @cms_page = @cms_site.pages.published.find_by_full_path!("/#{params[:cms_path]}")
+    @cms_page = @cms_site.pages.published.find_by(full_path:"/#{params[:cms_path]}")
     return redirect_to(@cms_page.target_page.url) if @cms_page.target_page
     
-  rescue ActiveRecord::RecordNotFound
-    if @cms_page = @cms_site.pages.published.find_by_full_path('/404')
+  rescue Mongoid::Errors::DocumentNotFound
+    if @cms_page = @cms_site.pages.published.where(full_path:'/404').exists?
       render_html(404)
     else
       raise ActionController::RoutingError.new('Page Not Found')
@@ -72,7 +72,7 @@ protected
 
   def load_cms_layout
     @cms_layout = @cms_site.layouts.find_by_identifier!(params[:identifier])
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     render :nothing => true, :status => 404
   end
 

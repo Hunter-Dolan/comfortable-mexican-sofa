@@ -8,7 +8,7 @@
       = form.file_field :file, :multiple => true, :id => nil
   
   .uploaded-files
-    - files_scope.order(:label).each do |file|
+    - files_scope.asc(:label).each do |file|
       = render :partial => 'cms_admin/files/file', :object => file
       
   %iframe#file-upload-frame{:name => 'file-upload-frame', :src => ''}

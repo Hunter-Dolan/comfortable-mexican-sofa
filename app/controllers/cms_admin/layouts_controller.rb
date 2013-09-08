@@ -20,8 +20,8 @@ class CmsAdmin::LayoutsController < CmsAdmin::BaseController
     @layout.save!
     flash[:success] = I18n.t('cms.layouts.created')
     redirect_to :action => :edit, :id => @layout
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.layouts.creation_failure')
     render :action => :new
   end
@@ -30,8 +30,8 @@ class CmsAdmin::LayoutsController < CmsAdmin::BaseController
     @layout.update_attributes!(layout_params)
     flash[:success] = I18n.t('cms.layouts.updated')
     redirect_to :action => :edit, :id => @layout
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.layouts.update_failure')
     render :action => :edit
   end
@@ -53,14 +53,14 @@ protected
 
   def build_layout
     @layout = @site.layouts.new(layout_params)
-    @layout.parent      ||= Cms::Layout.find_by_id(params[:parent_id])
+    @layout.parent      ||= Cms::Layout.find(params[:parent_id]) if params[:parent_id]
     @layout.app_layout  ||= @layout.parent.try(:app_layout)
     @layout.content     ||= '{{ cms:page:content:text }}'
   end
 
   def load_layout
     @layout = @site.layouts.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     flash[:error] = I18n.t('cms.layouts.not_found')
     redirect_to :action => :index
   end

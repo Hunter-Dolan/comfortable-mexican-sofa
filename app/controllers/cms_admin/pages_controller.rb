@@ -10,7 +10,7 @@ class CmsAdmin::PagesController < CmsAdmin::BaseController
     return redirect_to :action => :new if @site.pages.count == 0
     @pages_by_parent = @site.pages.includes(:categories).group_by(&:parent_id)
     if params[:category].present?
-      @pages = @site.pages.includes(:categories).for_category(params[:category]).order('label')
+      @pages = @site.pages.includes(:categories).for_category(params[:category]).asc('label')
     else
       @pages = [@site.pages.root].compact
     end
@@ -28,18 +28,23 @@ class CmsAdmin::PagesController < CmsAdmin::BaseController
     @page.save!
     flash[:success] = I18n.t('cms.pages.created')
     redirect_to :action => :edit, :id => @page
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.pages.creation_failure')
     render :action => :new
   end
 
   def update
+    if @page.is_published == "1"
+      @page.is_published = true
+    else
+      @page.is_published = false
+    end
     @page.save!
     flash[:success] = I18n.t('cms.pages.updated')
     redirect_to :action => :edit, :id => @page
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.pages.update_failure')
     render :action => :edit
   end
@@ -51,8 +56,8 @@ class CmsAdmin::PagesController < CmsAdmin::BaseController
   end
 
   def form_blocks
-    @page = @site.pages.find_by_id(params[:id]) || @site.pages.new
-    @page.layout = @site.layouts.find_by_id(params[:layout_id])
+    @page = @site.pages.find(params[:id]) || @site.pages.new
+    @page.layout = @site.layouts.find(params[:layout_id])
   end
 
   def toggle_branch
@@ -61,7 +66,7 @@ class CmsAdmin::PagesController < CmsAdmin::BaseController
     s   = (session[:cms_page_tree] ||= [])
     id  = @page.id.to_s
     s.member?(id) ? s.delete(id) : s << id
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     # do nothing
   end
 
@@ -83,7 +88,12 @@ protected
 
   def build_cms_page
     @page = @site.pages.new(page_params)
-    @page.parent ||= (@site.pages.find_by_id(params[:parent_id]) || @site.pages.root)
+    if @page.is_published == "1"
+      @page.is_published = true
+    else
+      @page.is_published = false
+    end
+    @page.parent ||= ((@site.pages.find(params[:parent_id]) if params[:parent_id]) || @site.pages.root)
     @page.layout ||= (@page.parent && @page.parent.layout || @site.layouts.first)
   end
 
@@ -95,7 +105,7 @@ protected
     @page = @site.pages.find(params[:id])
     @page.attributes = page_params
     @page.layout ||= (@page.parent && @page.parent.layout || @site.layouts.first)
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     flash[:error] = I18n.t('cms.pages.not_found')
     redirect_to :action => :index
   end

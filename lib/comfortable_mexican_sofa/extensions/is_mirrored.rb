@@ -64,8 +64,8 @@ module ComfortableMexicanSofa::IsMirrored
         mirror.is_mirrored = true
         begin
           mirror.save!
-        rescue ActiveRecord::RecordInvalid
-          logger.detailed_error($!)
+        rescue Mongoid::Errors::Validations
+          #logger.detailed_error($!)
         end
       end
     end
@@ -82,4 +82,3 @@ module ComfortableMexicanSofa::IsMirrored
   
 end
 
-ActiveRecord::Base.send :include, ComfortableMexicanSofa::IsMirrored

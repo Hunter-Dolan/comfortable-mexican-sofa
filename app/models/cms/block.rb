@@ -1,14 +1,27 @@
-class Cms::Block < ActiveRecord::Base
+class Cms::Block
   
-  ComfortableMexicanSofa.establish_connection(self)
+  include Mongoid::Document
+  include Mongoid::Timestamps
   
-  self.table_name = 'cms_blocks'
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  
+  #ComfortableMexicanSofa.establish_connection(self)
+  #self.table_name = 'cms_blocks'
+  
+  field :identifier, type: String
+  field :content, type: String
+  
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :page
+  belongs_to :page, class_name: "Cms::Page"
   has_many :files,
     :autosave   => true,
-    :dependent  => :destroy
+    :dependent  => :destroy,
+    class_name: "Cms::File"
   
   # -- Callbacks ------------------------------------------------------------
   before_save :prepare_files

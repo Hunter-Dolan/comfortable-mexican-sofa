@@ -1,13 +1,20 @@
-class Cms::Categorization < ActiveRecord::Base
+class Cms::Categorization
   
-  ComfortableMexicanSofa.establish_connection(self)
+  include Mongoid::Document
   
-  self.table_name = 'cms_categorizations'
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  
+  field :categorized_type, type: String
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :category
+  belongs_to :category, class_name: "Cms::Category"
   belongs_to :categorized,
-    :polymorphic => true
+    :polymorphic => true,
+    :class_name => "Cms::Category"
     
   # -- Validations ----------------------------------------------------------
   validates :categorized_type, :categorized_id,

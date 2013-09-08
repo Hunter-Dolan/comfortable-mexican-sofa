@@ -1,16 +1,29 @@
-class Cms::Layout < ActiveRecord::Base
+class Cms::Layout
   
-  ComfortableMexicanSofa.establish_connection(self)
-    
-  self.table_name = 'cms_layouts'
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  field :app_layout
+  field :label
+  field :identifier
+  field :content
+  field :css
+  field :js
+  field :position, type: Integer
+  field :is_shared, type: Boolean
   
   cms_acts_as_tree
   cms_is_mirrored
   cms_has_revisions_for :content, :css, :js
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :site
-  has_many :pages, :dependent => :nullify
+  belongs_to :site, class_name: "Cms::Site"
+  has_many :pages, :dependent => :nullify, class_name: "Cms::Page"
   
   # -- Callbacks ------------------------------------------------------------
   before_validation :assign_label
@@ -29,7 +42,7 @@ class Cms::Layout < ActiveRecord::Base
     :format     => { :with => /\A\w[a-z0-9_-]*\z/i }
     
   # -- Scopes ---------------------------------------------------------------
-  default_scope -> { order('cms_layouts.position') }
+  ##default_scope -> { order('cms_layouts.position') }
   
   # -- Class Methods --------------------------------------------------------
   # Tree-like structure for layouts
@@ -78,7 +91,7 @@ protected
   
   def assign_position
     return if self.position.to_i > 0
-    max = self.site.layouts.where(:parent_id => self.parent_id).maximum(:position)
+    max = self.site.layouts.where(:parent_id => self.parent_id).max(:position)
     self.position = max ? max + 1 : 0
   end
   

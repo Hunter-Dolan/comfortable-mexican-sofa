@@ -14,7 +14,8 @@ module ComfortableMexicanSofa::HasRevisions
       
       has_many :revisions,
         :as         => :record,
-        :dependent  => :destroy
+        :dependent  => :destroy,
+        :class_name => "Cms::Revision"
       
       before_save :prepare_revision
       after_save  :create_revision
@@ -50,7 +51,7 @@ module ComfortableMexicanSofa::HasRevisions
       
       # blowing away old revisions
       ids = [0] + self.revisions.limit(ComfortableMexicanSofa.config.revisions_limit.to_i).collect(&:id)
-      self.revisions.where('id NOT IN (?)', ids).destroy_all
+      self.revisions.not_in(:_id => ids).destroy_all
     end
     
     # Assigning whatever is found in revision data and attemptint to save the object
@@ -60,5 +61,3 @@ module ComfortableMexicanSofa::HasRevisions
     end
   end
 end
-
-ActiveRecord::Base.send :include, ComfortableMexicanSofa::HasRevisions

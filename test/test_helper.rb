@@ -59,7 +59,7 @@ class ActiveSupport::TestCase
   
   # Example usage:
   #   assert_exception_raised                                 do ... end
-  #   assert_exception_raised ActiveRecord::RecordInvalid     do ... end
+  #   assert_exception_raised Mongoid::Errors::Validations     do ... end
   #   assert_exception_raised Plugin::Error, 'error_message'  do ... end
   def assert_exception_raised(exception_class = nil, error_message = nil, &block)
     exception_raised = nil

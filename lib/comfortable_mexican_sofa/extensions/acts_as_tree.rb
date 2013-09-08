@@ -8,7 +8,6 @@ module ComfortableMexicanSofa::ActsAsTree
     def cms_acts_as_tree(options = {})
       configuration = {
         :foreign_key    => 'parent_id', 
-        :order          => nil, 
         :counter_cache  => nil,
         :dependent      => :destroy,
         :touch          => false }
@@ -21,7 +20,6 @@ module ComfortableMexicanSofa::ActsAsTree
         :touch          => configuration[:touch]
         
       has_many :children,
-        -> { order(configuration[:order])},
         :class_name     => name, 
         :foreign_key    => configuration[:foreign_key],
         :dependent      => configuration[:dependent]
@@ -30,9 +28,7 @@ module ComfortableMexicanSofa::ActsAsTree
         include ComfortableMexicanSofa::ActsAsTree::InstanceMethods
         
         scope :roots, -> {
-          where("#{configuration[:foreign_key]} IS NULL").
-          order(#{configuration[:order].nil? ? "nil" : %Q{"#{configuration[:order]}"}})
-        }
+          where("#{configuration[:foreign_key]}" => nil)        }
         
         def self.root
           roots.first
@@ -99,5 +95,3 @@ module ComfortableMexicanSofa::ActsAsTree
     end
   end
 end
-
-ActiveRecord::Base.send :include, ComfortableMexicanSofa::ActsAsTree

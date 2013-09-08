@@ -107,12 +107,12 @@ class MirrorsTest < ActiveSupport::TestCase
     
     assert_difference ['@site_a.layouts.count', '@site_b.layouts.count'], -1 do
       layout_1a.destroy
-      assert_nil Cms::Layout.find_by_id(layout_2a.id)
+      assert_nil Cms::Layout.find(layout_2a.id)
     end
     
     assert_difference ['@site_a.layouts.count', '@site_b.layouts.count'], -2 do
       layout_1b.destroy
-      assert_nil Cms::Layout.find_by_id(layout_2b.id)
+      assert_nil Cms::Layout.find(layout_2b.id)
     end
   end
   
@@ -129,12 +129,12 @@ class MirrorsTest < ActiveSupport::TestCase
     
     assert_difference ['@site_a.pages.count', '@site_b.pages.count'], -1 do
       page_1a.destroy
-      assert_nil Cms::Page.find_by_id(page_2a.id)
+      assert_nil Cms::Page.find(page_2a.id)
     end
     
     assert_difference ['@site_a.pages.count', '@site_b.pages.count'], -2 do
       page_1r.destroy
-      assert_nil Cms::Page.find_by_id(page_2r.id)
+      assert_nil Cms::Page.find(page_2r.id)
     end
   end
   
@@ -145,7 +145,7 @@ class MirrorsTest < ActiveSupport::TestCase
     
     assert_difference ['@site_a.snippets.count', '@site_b.snippets.count'], -1 do
       snippet_1.destroy
-      assert_nil Cms::Snippet.find_by_id(snippet_2.id)
+      assert_nil Cms::Snippet.find(snippet_2.id)
     end
   end
   

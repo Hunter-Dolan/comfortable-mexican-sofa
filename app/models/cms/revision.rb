@@ -1,15 +1,20 @@
-class Cms::Revision < ActiveRecord::Base
+class Cms::Revision
   
-  ComfortableMexicanSofa.establish_connection(self)
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Attributes::Dynamic
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
   
-  self.table_name = 'cms_revisions'
-  
-  serialize :data
-  
+  field :record_type
+  field :text
+    
   # -- Relationships --------------------------------------------------------
   belongs_to :record, :polymorphic => true
   
   # -- Scopes ---------------------------------------------------------------
-  default_scope -> { order('created_at DESC') }
+  #default_scope -> { order('created_at DESC') }
   
 end

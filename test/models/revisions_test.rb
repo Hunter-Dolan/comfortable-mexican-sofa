@@ -174,7 +174,7 @@ class RevisionsTest < ActiveSupport::TestCase
     
     assert_no_difference 'snippet.revisions.count' do
       snippet.update_attributes(:content => 'new content')
-      assert_nil Cms::Revision.find_by_id(revision.id)
+      assert_nil Cms::Revision.find(revision.id)
       
       snippet.reload
       revision = snippet.revisions.first

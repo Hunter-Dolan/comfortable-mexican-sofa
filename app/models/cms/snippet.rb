@@ -1,15 +1,23 @@
-class Cms::Snippet < ActiveRecord::Base
+class Cms::Snippet
+  include Mongoid::Document
+
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
   
-  ComfortableMexicanSofa.establish_connection(self)
-  
-  self.table_name = 'cms_snippets'
+  field :label
+  field :identifier
+  field :content
+  field :position, type: Integer
+  field :is_shared, type: Boolean
   
   cms_is_categorized
   cms_is_mirrored
   cms_has_revisions_for :content
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :site
+  belongs_to :site, class_name: "Cms::Site"
   
   # -- Callbacks ------------------------------------------------------------
   before_validation :assign_label
@@ -28,7 +36,7 @@ class Cms::Snippet < ActiveRecord::Base
     :format     => { :with => /\A\w[a-z0-9_-]*\z/i }
     
   # -- Scopes ---------------------------------------------------------------
-  default_scope -> { order('cms_snippets.position') }
+  #default_scope -> { order('cms_snippets.position') }
   
 protected
   
@@ -46,7 +54,7 @@ protected
   end
   
   def assign_position
-    max = self.site.snippets.maximum(:position)
+    max = self.site.snippets.max(:position)
     self.position = max ? max + 1 : 0
   end
   

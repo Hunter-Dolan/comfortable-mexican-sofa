@@ -1,16 +1,26 @@
-class Cms::Site < ActiveRecord::Base
+class Cms::Site
   
-  ComfortableMexicanSofa.establish_connection(self)
+  include Mongoid::Document
   
-  self.table_name = 'cms_sites'
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  field :label
+  field :identifier
+  field :hostname
+  field :path
+  field :locale 
+  field :is_mirrored, type: Boolean
   
   # -- Relationships --------------------------------------------------------
   with_options :dependent => :destroy do |site|
-    site.has_many :layouts
-    site.has_many :pages
-    site.has_many :snippets
-    site.has_many :files
-    site.has_many :categories
+    site.has_many :layouts, class_name: "Cms::Layout"
+    site.has_many :pages, class_name: "Cms::Page"
+    site.has_many :snippets, class_name: "Cms::Snippet"
+    site.has_many :files, class_name: "Cms::File"
+    site.has_many :categories, class_name: "Cms::Category"
   end
   
   # -- Callbacks ------------------------------------------------------------

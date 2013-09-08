@@ -1,13 +1,20 @@
-class Cms::Category < ActiveRecord::Base
+class Cms::Category
   
-  ComfortableMexicanSofa.establish_connection(self)
-  
-  self.table_name = 'cms_categories'
-  
+  include Mongoid::Document
+
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+
+  field :label, type: String
+  field :categorized_type, type: String
+    
   # -- Relationships --------------------------------------------------------
-  belongs_to :site
+  belongs_to :site, class_name: "Cms::Site"
   has_many :categorizations,
-    :dependent => :destroy
+    :dependent => :destroy,
+    class_name: "Cms::Categorization"
     
   # -- Validations ----------------------------------------------------------
   validates :site_id, 
@@ -18,9 +25,6 @@ class Cms::Category < ActiveRecord::Base
   validates :categorized_type,
     :presence   => true
     
-  # -- Scopes ---------------------------------------------------------------
-  default_scope{ order(:label) }
-  
   scope :of_type, lambda { |type|
     where(:categorized_type => type)
   }

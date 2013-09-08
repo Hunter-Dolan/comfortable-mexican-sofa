@@ -20,8 +20,8 @@ class CmsAdmin::SnippetsController < CmsAdmin::BaseController
     @snippet.save!
     flash[:success] = I18n.t('cms.snippets.created')
     redirect_to :action => :edit, :id => @snippet
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.snippets.creation_failure')
     render :action => :new
   end
@@ -30,8 +30,8 @@ class CmsAdmin::SnippetsController < CmsAdmin::BaseController
     @snippet.update_attributes!(snippet_params)
     flash[:success] = I18n.t('cms.snippets.updated')
     redirect_to :action => :edit, :id => @snippet
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.snippets.update_failure')
     render :action => :edit
   end
@@ -57,7 +57,7 @@ protected
 
   def load_snippet
     @snippet = @site.snippets.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     flash[:error] = I18n.t('cms.snippets.not_found')
     redirect_to :action => :index
   end

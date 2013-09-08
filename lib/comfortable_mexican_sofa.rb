@@ -25,7 +25,7 @@ require_relative 'comfortable_mexican_sofa/extensions/acts_as_tree'
 require_relative 'comfortable_mexican_sofa/extensions/has_revisions'
 require_relative 'comfortable_mexican_sofa/extensions/is_mirrored'
 require_relative 'comfortable_mexican_sofa/extensions/is_categorized'
-
+require 'mongoid_paperclip'
 Dir.glob(File.expand_path('comfortable_mexican_sofa/tags/*.rb', File.dirname(__FILE__))).each do |path|
   require_relative path
 end

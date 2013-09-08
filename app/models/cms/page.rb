@@ -1,10 +1,24 @@
 # encoding: utf-8
 
-class Cms::Page < ActiveRecord::Base
+class Cms::Page
   
-  ComfortableMexicanSofa.establish_connection(self)
-    
-  self.table_name = 'cms_pages'
+  include Mongoid::Document
+  include Mongoid::Timestamps
+
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  field :label
+  field :slug
+  field :full_path
+  field :content
+  field :children_count, type: Integer
+  field :is_published, type: Boolean
+  field :is_shared, type: Boolean
+  field :data
+  field :position, type: Integer
   
   cms_acts_as_tree :counter_cache => :children_count
   cms_is_categorized
@@ -15,13 +29,14 @@ class Cms::Page < ActiveRecord::Base
                 :blocks_attributes_changed
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :site
-  belongs_to :layout
+  belongs_to :site, class_name: "Cms::Site"
+  belongs_to :layout, class_name: "Cms::Layout"
   belongs_to :target_page,
     :class_name => 'Cms::Page'
   has_many :blocks,
     :autosave   => true,
-    :dependent  => :destroy
+    :dependent  => :destroy,
+    class_name: "Cms::Block"
   
   # -- Callbacks ------------------------------------------------------------
   before_validation :assigns_label,
@@ -48,8 +63,9 @@ class Cms::Page < ActiveRecord::Base
   validate :validate_format_of_unescaped_slug
   
   # -- Scopes ---------------------------------------------------------------
-  default_scope -> { order('cms_pages.position') }
-  scope :published, -> { where(:is_published => true) }
+  #default_scope -> { order('cms_pages.position') }
+  scope :published, -> { any_of([:is_published => true], [:is_published => "1"]) }
+
   
   # -- Class Methods --------------------------------------------------------
   # Tree-like structure for pages
@@ -150,7 +166,7 @@ protected
   def assign_position
     return unless self.parent
     return if self.position.to_i > 0
-    max = self.parent.children.maximum(:position)
+    max = self.parent.children.max(:position)
     self.position = max ? max + 1 : 0
   end
   

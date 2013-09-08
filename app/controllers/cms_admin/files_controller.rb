@@ -6,7 +6,7 @@ class CmsAdmin::FilesController < CmsAdmin::BaseController
   before_action :load_file,   :only => [:edit, :update, :destroy]
   
   def index
-    @files = @site.files.includes(:categories).for_category(params[:category]).order('cms_files.position')
+    @files = @site.files.includes(:categories).for_category(params[:category]).asc('cms_files.position')
     
     if params[:ajax]
       if params[:not_images]
@@ -55,8 +55,8 @@ class CmsAdmin::FilesController < CmsAdmin::BaseController
       redirect_to :action => :edit, :id => @file
     end
     
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     if params[:ajax]
       render :nothing => true, :status => :unprocessable_entity
     else
@@ -69,8 +69,8 @@ class CmsAdmin::FilesController < CmsAdmin::BaseController
     @file.update_attributes!(file_params)
     flash[:success] = I18n.t('cms.files.updated')
     redirect_to :action => :edit, :id => @file
-  rescue ActiveRecord::RecordInvalid
-    logger.detailed_error($!)
+  rescue Mongoid::Errors::Validations
+    #logger.detailed_error($!)
     flash.now[:error] = I18n.t('cms.files.update_failure')
     render :action => :edit
   end
@@ -88,7 +88,7 @@ class CmsAdmin::FilesController < CmsAdmin::BaseController
   
   def reorder
     (params[:cms_file] || []).each_with_index do |id, index|
-      if (cms_file = Cms::File.find_by_id(id))
+      if (cms_file = Cms::File.find(id))
         cms_file.update_attributes(:position => index)
       end
     end
@@ -103,7 +103,7 @@ protected
   
   def load_file
     @file = @site.files.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
+  rescue Mongoid::Errors::DocumentNotFound
     flash[:error] = I18n.t('cms.files.not_found')
     redirect_to :action => :index
   end

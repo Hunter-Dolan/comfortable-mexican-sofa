@@ -12,9 +12,8 @@ module ComfortableMexicanSofa::IsCategorized
         :as         => :categorized,
         :class_name => 'Cms::Categorization',
         :dependent  => :destroy
-      has_many :categories,
-        :through    => :categorizations,
-        :class_name => 'Cms::Category'
+
+      has_and_belongs_to_many :categories, class_name: "Cms::Category"
         
       attr_accessor :category_ids
       
@@ -35,7 +34,7 @@ module ComfortableMexicanSofa::IsCategorized
       (self.category_ids || {}).each do |category_id, flag|
         case flag.to_i
         when 1
-          if category = Cms::Category.find_by_id(category_id)
+          if category = Cms::Category.find(category_id)
             category.categorizations.create(:categorized => self)
           end
         when 0
@@ -45,5 +44,3 @@ module ComfortableMexicanSofa::IsCategorized
     end
   end
 end
-
-ActiveRecord::Base.send :include, ComfortableMexicanSofa::IsCategorized

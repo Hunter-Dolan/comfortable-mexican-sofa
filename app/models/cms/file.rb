@@ -1,17 +1,25 @@
-class Cms::File < ActiveRecord::Base
+class Cms::File
+  
+  include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Paperclip
+  include ComfortableMexicanSofa::ActsAsTree
+  include ComfortableMexicanSofa::HasRevisions
+  include ComfortableMexicanSofa::IsCategorized
+  include ComfortableMexicanSofa::IsMirrored
+  
+  field :label, type: String
+  field :description, type: String
+  field :position, type: Integer
   
   IMAGE_MIMETYPES = %w(gif jpeg pjpeg png svg+xml tiff).collect{|subtype| "image/#{subtype}"}
-  
-  ComfortableMexicanSofa.establish_connection(self)
-    
-  self.table_name = 'cms_files'
   
   cms_is_categorized
   
   attr_accessor :dimensions
   
   # -- AR Extensions --------------------------------------------------------
-  has_attached_file :file, ComfortableMexicanSofa.config.upload_file_options.merge(
+  has_mongoid_attached_file :file, ComfortableMexicanSofa.config.upload_file_options.merge(
     # dimensions accessor needs to be set before file assignment for this to work
     :styles => lambda { |f|
       if f.respond_to?(:instance) && f.instance.respond_to?(:dimensions)
@@ -24,8 +32,8 @@ class Cms::File < ActiveRecord::Base
   before_post_process :is_image?
   
   # -- Relationships --------------------------------------------------------
-  belongs_to :site
-  belongs_to :block
+  belongs_to :site, class_name: "Cms::Site"
+  belongs_to :block, class_name: "Cms::Block"
   
   # -- Validations ----------------------------------------------------------
   validates :site_id,
@@ -56,7 +64,7 @@ protected
   end
   
   def assign_position
-    max = Cms::File.maximum(:position)
+    max = Cms::File.max(:position)
     self.position = max ? max + 1 : 0
   end
   

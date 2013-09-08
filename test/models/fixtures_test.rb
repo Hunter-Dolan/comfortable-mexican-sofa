@@ -21,7 +21,7 @@ class FixtureTest < ActiveSupport::TestCase
   def test_import_all_with_no_site
     cms_sites(:default).destroy
     
-    assert_exception_raised ActiveRecord::RecordNotFound do
+    assert_exception_raised Mongoid::Errors::DocumentNotFound do
       ComfortableMexicanSofa::Fixture::Importer.new('sample-site', 'default-site').import!
     end
   end
@@ -35,7 +35,7 @@ class FixtureTest < ActiveSupport::TestCase
   def test_import_all_with_no_site
     cms_sites(:default).destroy
     
-    assert_exception_raised ActiveRecord::RecordNotFound do
+    assert_exception_raised Mongoid::Errors::DocumentNotFound do
       ComfortableMexicanSofa::Fixture::Exporter.new('sample-site', 'default-site').export!
     end
   end
